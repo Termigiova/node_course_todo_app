@@ -14,9 +14,9 @@ const port = process.env.PORT;
 
 app.use(bodyParser.json());
 
-app.post('/todos', (request, res) => {
+app.post('/todos', (req, res) => {
     let todo = new Todo({
-        text: request.body.text
+        text: req.body.text
     });
 
     todo.save().then((todo) => {
@@ -26,7 +26,7 @@ app.post('/todos', (request, res) => {
     })
 });
 
-app.get('/todos', (request, res) => {
+app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
         res.send({todos});
     }, (e) => {
@@ -34,8 +34,8 @@ app.get('/todos', (request, res) => {
     });
 });
 
-app.get('/todos/:id', (request, res) => {
-    let id = request.params.id;
+app.get('/todos/:id', (req, res) => {
+    let id = req.params.id;
 
     if (!ObjectID.isValid(id))
         return res.status(404).send();
@@ -52,8 +52,8 @@ app.get('/todos/:id', (request, res) => {
     });
 });
 
-app.delete('/todos/:id', (request, res) => {
-    let id = request.params.id;
+app.delete('/todos/:id', (req, res) => {
+    let id = req.params.id;
 
     if(!ObjectID.isValid(id))
         return res.status(404).send();
@@ -68,12 +68,12 @@ app.delete('/todos/:id', (request, res) => {
     })
 });
 
-app.patch('/todos/:id', (request, response) => {
-    let id = request.params.id;
-    let body = _.pick(request.body, ['text', 'completed']);
+app.patch('/todos/:id', (req, res) => {
+    let id = req.params.id;
+    let body = _.pick(req.body, ['text', 'completed']);
 
     if (!ObjectID.isValid(id))
-        return response.status(404).send();
+        return res.status(404).send();
 
     if(_.isBoolean(body.completed) && body.completed)
         body.completedAt = new Date().getTime();
@@ -84,11 +84,24 @@ app.patch('/todos/:id', (request, response) => {
 
      Todo.findOneAndUpdate({_id: id}, {$set: body}, {new: true}).then((todo) => {
         if(!todo)
-            return response.status(404).send();
+            return res.status(404).send();
 
-        response.send({todo});
+        res.send({todo});
      }).catch((e) => {
-        response.status(400).send();
+        res.status(400).send();
+    });
+});
+
+app.post('/users', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']);
+    let user = new User(body);
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
     });
 });
 
