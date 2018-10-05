@@ -19,7 +19,11 @@ let UserSchema = new mongoose.Schema({
     password: {
         type: String,
         require: true,
-        minlength: 8
+        minlength: 6,
+        validate: {
+            validator: validator.isAlphanumeric,
+            message: '{VALUE} is not alphanumeric'
+        }
     },
     tokens: [{
         access: {
