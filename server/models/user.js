@@ -20,10 +20,7 @@ let UserSchema = new mongoose.Schema({
         type: String,
         require: true,
         minlength: 6,
-        validate: {
-            validator: validator.isAlphanumeric,
-            message: '{VALUE} is not alphanumeric'
-        }
+        validator: 'isAlphaNumeric'
     },
     tokens: [{
         access: {
