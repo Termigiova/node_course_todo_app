@@ -129,6 +129,23 @@ app.post('/users/login', (req, res) => {
     });
 });
 
+app.patch('/users/me/update', authenticate, (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']);
+
+    User.findByToken(req.header('x-auth')).then((user) => {
+        user.set({
+            email: body.email,
+            password: body.password
+        });
+        user.save().then((result) => {
+            res.send(result);
+        });
+    }).catch((e) => {
+        res.status(400).send();
+    });
+
+});
+
 app.delete('/users/me/token', authenticate, (req, res) => {
     req.user.removeToken(req.token).then(() => {
         res.status(200).send();
